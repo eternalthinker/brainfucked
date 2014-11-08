@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Brainfucked - a Javascript interpreter for Brainfuck programming language</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="brainfucked.js"></script>
+
+    <!-- <script>
+        var startTime = Date.now();
+        var arr1 = Array.apply(null, new Array(30000)).map(Number.prototype.valueOf,0);
+        document.write(Date.now() - startTime, " : ");
+
+        startTime = Date.now();
+        var arr2 = [];
+        var limit = 30000;
+        while (true) {
+            arr2[arr2.length] = 0;
+            if (arr2.length == 30000)
+                break;
+        }
+        document.write(Date.now() - startTime);
+    </script> -->
+</head>
+
+<body>
+<section>
+    <header>
+        <h1>Brainfucked</h1>
+        <h2>A JavaScript interpreter for Brainfuck programming language</h2>
+    </header>
+    <div>
+        <section>
+        Program:
+         <textarea id="program" rows="4" cols="50">
+Hello World program
+++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
+         </textarea> 
+         </section>
+
+        <section>
+        Input:
+        <input id="input" type="text">
+         </section>
+
+        <section>
+        <button type="button" onClick="run()">Run</button>
+         </section>
+
+        <section>
+        Output:
+         <textarea id="output" rows="4" cols="50" readonly></textarea> 
+         </section>
+
+        
+    </div>
+</section>
+</body>  
+  
+</html>
