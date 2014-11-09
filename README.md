@@ -3,7 +3,7 @@ Brainfucked
 
 A JavaScript interpreter for Brainfuck programming language
 
-*Only basic version is up*
+*Only [basic version](http://eternalthinker.github.io/brainfucked) is up*
 
 **TODO**
 - [x] Basic compiler
