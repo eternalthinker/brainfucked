@@ -7,7 +7,7 @@ A JavaScript interpreter for Brainfuck programming language
 
 **TODO**
 - [x] Basic compiler
-- [ ] Use timeouts to relish control to JS thread for time intensive BF programs
+- [ ] <s>Use timeouts to relish control to JS thread for time intensive BF programs</s> Webworkers!
 - [ ] Handle input
 - [ ] Better HTML styling - Bootstrap
 - [ ] Goodies - memory rendering etc
