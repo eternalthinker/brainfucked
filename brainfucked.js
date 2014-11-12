@@ -2,12 +2,11 @@
 
 // error, infy loop
 
-function Interpreter (program, input, ui, optimize)
+function Interpreter (program, input, optimize)
 {
 	// Essential components
 	this.program = program.trim();
 	this.input = input;
-	this.ui = ui; // update and retrieve info from UI
 
 	this.pc = 0; // program counter
 	this.inputIdx = 0;
@@ -59,6 +58,8 @@ Interpreter.prototype.optimizeProgram = function()
 	var stack = [];
 	var buffer = { op: null, count: 0 };
 
+	this.program = this.program.replace(/[^><+-.,\[\]]/g, "");
+
 	for (var pc = 0; pc < this.program.length; ++pc) {
 		var op = this.program[pc];
 
@@ -96,9 +97,6 @@ Interpreter.prototype.optimizeProgram = function()
 				o_program.push(op);
 				o_pc++;
 				var lmatch = stack.pop();
-				if (lmatch == undefined) {
-					// Error
-				}
 				this.jumps[lmatch] = o_pc;
 				this.jumps[o_pc] = lmatch;
 				break;
@@ -149,9 +147,9 @@ Interpreter.prototype.step = function()
 			break;
 		}
 		case '.': {
-			this.output += String.fromCharCode(this.memory[this.memoryIdx]);
-			//document.writeln(this.output[this.output.length-1]);
-			postMessage(this.output[this.output.length-1]);
+			var c = String.fromCharCode(this.memory[this.memoryIdx]);
+			//this.output += c;
+			postMessage({ "command": "print", "value": c });
 			break;
 		}
 		case ',': {
@@ -192,10 +190,7 @@ Interpreter.prototype.step = function()
 Interpreter.prototype.run = function()
 {
 	while(this.pc < this.program.length) {
-	//var i = 0;
-	//while (i < 10000) {
 		this.step();
-	//	++i;
 	}
 }
 
@@ -207,7 +202,6 @@ Interpreter.prototype.o_run = function()
 
 		if (typeof op == 'number') {
 			count = op;
-			//postMessage(op);
 			op = this.program[++this.pc];
 		}
 
@@ -243,9 +237,9 @@ Interpreter.prototype.o_run = function()
 				break;
 			}
 			case '.': {
-				this.output += String.fromCharCode(this.memory[this.memoryIdx]);
-				//document.writeln(this.output[this.output.length-1]);
-				postMessage(this.output[this.output.length-1]);
+				var c = String.fromCharCode(this.memory[this.memoryIdx]);
+				//this.output += c;
+				postMessage({ "command": "print", "value": c });
 				break;
 			}
 			case ',': {
@@ -285,42 +279,41 @@ Interpreter.prototype.o_run = function()
 	}
 }
 
-
-function UiControls ()
-{
-
-}
-// UI Controls
-// step mode
-// sanitize i/p
-// error
-
 function run()
 {
-	//var outputUi = document.getElementById("output");
-	//var program = document.getElementById("program").value;
-	//var 
 	if (interpreter.optimized) {
 		interpreter.o_run();
 	}
 	else {
-		interpreter.o_run();
+		interpreter.run();
 	}
-	var timeTaken = ((Date.now() - interpreter.startTime)/1000.0);
-	postMessage("\nRuntime: " + timeTaken + "s\n");
-	//for (var i =0; i < interpreter.memory.length; ++i) {
-	//	postMessage(interpreter.memory[i] + " ");
-	//}
-	//outputUi.value += "Runtime: " + timeTaken + "s";
+	var timeTaken = ((Date.now() - interpreter.startTime)/1000.0) + "s";
+	postMessage({ "command": "fin", "runtime": timeTaken });
 }
 
 onmessage = function(event) {
 	var data = event.data;
 
-	if (data.command == "run") {
-		interpreter = new Interpreter(data.program, null, null, true);
-		//postMessage("\n" + interpreter.program.join("") + " pc = " + interpreter.pc + '\n');
-		run();
+	switch (data.command) {
+		case "run": {
+			interpreter = new Interpreter(data.program, data.input, data.optimize);
+			run();
+			break;
+		}
+		case "input": {
+			// move on to resume
+		}
+		case "resume": {
+			break;
+		}
+		case "pause": {
+			break;
+		}
+		case "stop": {
+			break;
+		}
+		default:
+			break;
 	}
 };
 

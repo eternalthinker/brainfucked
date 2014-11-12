@@ -15,7 +15,7 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 
-    <script src="worker.js"></script>
+    <script src="manager.js"></script>
 
     <!-- <script>
         var startTime = Date.now();
@@ -52,10 +52,15 @@ Hello World program
         <section>
         Input:
         <input id="input" type="text">
+        <input type="checkbox" name="optimize" value="optimize" id="optimize" checked> <span>Minor optimization</span>
          </section>
 
         <section>
         <button type="button" onClick="run()">Run</button>
+         </section>
+
+         <section>
+            <span>Runtime:</span> <span id="runtime"></span>
          </section>
 
         <section>
