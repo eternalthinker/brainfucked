@@ -20,6 +20,8 @@ function Interpreter (program, input, optimize)
 
 	// Goodies
 	this.startTime = Date.now(); 
+	this.runTime = 0;
+	this.halt = false;
 
 	// Actions
 	if (optimize) {
@@ -29,6 +31,20 @@ function Interpreter (program, input, optimize)
 	else {
 		this.preProcess();
 	}
+	this.runTime += Date.now() - this.startTime;
+}
+
+Interpreter.prototype.feedInput = function(input) 
+{
+	this.input = input;
+	this.inputIdx = 0;
+}
+
+Interpreter.prototype.fin = function() 
+{
+	this.halt = true;
+	var timeTaken = (this.runTime/1000.0) + "s";
+	postMessage({ "command": "fin", "runtime": timeTaken });
 }
 
 Interpreter.prototype.preProcess = function()
@@ -111,93 +127,31 @@ Interpreter.prototype.optimizeProgram = function()
 				break;
 		}
 	}
-	if (stack.length > 0) {
-		// Error, unmatched '['
+	if (buffer.op != null) { // ><+- might remain in buffer if program ends with them
+		if (buffer.count > 1) {
+			o_program.push(buffer.count);
+			o_pc++;
+		} 
+		o_program.push(buffer.op);
+		o_pc++;
+		buffer.op = null;
+		buffer.count = 0;
 	}
 	this.program = o_program;
 };
 
-Interpreter.prototype.step = function()
-{
-	var op = this.program[this.pc];
-	//document.write(op);
-	switch (op) {
-		case '>': {
-			if (++this.memoryIdx == this.memory.length) {
-				this.memory[this.memoryIdx] = 0;
-			}
-			break;
-		}
-		case '<': {
-			if (--this.memoryIdx < 0) {
-				// Error
-			}
-			break;
-		}
-		case '+': {
-			if (++this.memory[this.memoryIdx] > 255) {
-				this.memory[this.memoryIdx] = 0;
-			}
-			break;
-		}
-		case '-': {
-			if (--this.memory[this.memoryIdx] < 0) {
-				this.memory[this.memoryIdx] = 255;
-			}
-			break;
-		}
-		case '.': {
-			var c = String.fromCharCode(this.memory[this.memoryIdx]);
-			//this.output += c;
-			postMessage({ "command": "print", "value": c });
-			break;
-		}
-		case ',': {
-			if (this.inputIdx < this.input.length) {
-				this.memory[this.memoryIdx] = String.charCodeAt(this.input[this.inputIdx++]);
-			}
-			else {
-				this.memory[this.memoryIdx] = 0;
-				// Prompt input
-			}
-			break;
-		}
-		case '[': {
-			if (this.memory[this.memoryIdx] == 0) {
-				this.pc = this.jumps[this.pc];
-			}
-			if (this.pc == undefined) {
-				// Error
-			}
-			break;
-		}
-		case ']': {
-			if (this.memory[this.memoryIdx] != 0) {
-				//document.writeln("<br/>" + this.pc + " [ ] " + this.jumps[this.pc]);
-				this.pc = this.jumps[this.pc];
-			}
-			if (this.pc == undefined) {
-				// Error
-			}
-			break;
-		}
-		default:
-			break;
-	}
-	++this.pc;
-}
-
-Interpreter.prototype.run = function()
-{
-	while(this.pc < this.program.length) {
-		this.step();
-	}
-}
-
 Interpreter.prototype.o_run = function()
 {
+	if (this.halt) {
+		throw {
+			name: "HaltInterpreter",
+			level: "PROCEDURAL"
+		};
+	}
+	this.startTime = Date.now();
 	var count = 1;
-	while(this.pc < this.program.length) {
+	var iters = 50000;
+	while(this.pc < this.program.length && --iters > 0) {
 		var op = this.program[this.pc];
 
 		if (typeof op == 'number') {
@@ -217,8 +171,13 @@ Interpreter.prototype.o_run = function()
 			}
 			case '<': {
 				this.memoryIdx -= count;
+				postMessage({ "command": "print", "value": this.memoryIdx });
 				if (this.memoryIdx < 0) {
-					// Error
+					throw {
+						name: "MemoryUnderflow",
+						level: "TERMINAL",
+						message: "Program attempted to access out of bound memory"
+					};
 				}
 				break;
 			}
@@ -248,7 +207,11 @@ Interpreter.prototype.o_run = function()
 				}
 				else {
 					this.memory[this.memoryIdx] = 0;
-					// Prompt input
+					this.halt = true;
+					throw {
+						name: "EOF",
+						level: "PROCEDURAL"
+					};
 				}
 				break;
 			}
@@ -257,17 +220,24 @@ Interpreter.prototype.o_run = function()
 					this.pc = this.jumps[this.pc];
 				}
 				if (this.pc == undefined) {
-					// Error
+					throw {
+						name: "UnmatchedBrackets",
+						level: "TERMINAL",
+						message: "Unmatched '[' found in source code"
+					};
 				}
 				break;
 			}
 			case ']': {
 				if (this.memory[this.memoryIdx] != 0) {
-					//document.writeln("<br/>" + this.pc + " [ ] " + this.jumps[this.pc]);
 					this.pc = this.jumps[this.pc];
 				}
 				if (this.pc == undefined) {
-					// Error
+					throw {
+						name: "UnmatchedBrackets",
+						level: "TERMINAL",
+						message: "Unmatched ']' found in source code"
+					};
 				}
 				break;
 			}
@@ -276,22 +246,43 @@ Interpreter.prototype.o_run = function()
 		}
 		count = 1;
 		++this.pc;
+	} // end of while
+
+	this.runTime += Date.now() - this.startTime;
+	if (this.pc >= this.program.length) {
+		this.fin();
+	}
+	else {
+		setTimeout(run, 1);
 	}
 }
 
 function run()
 {
-	if (interpreter.optimized) {
+	try {
 		interpreter.o_run();
 	}
-	else {
-		interpreter.run();
+	catch (err) {
+		switch (err.level) {
+			case "TERMINAL": {
+				postMessage({ "command": "error", "message": err.message });
+				interpreter.fin();
+				break;
+			}
+			case "PROCEDURAL": {
+				if (err.name === "EOF") {
+					postMessage({ "command": "read" });
+				}
+				break;
+			}
+			default:
+				break;
+		}
 	}
-	var timeTaken = ((Date.now() - interpreter.startTime)/1000.0) + "s";
-	postMessage({ "command": "fin", "runtime": timeTaken });
 }
 
-onmessage = function(event) {
+onmessage = function(event) 
+{
 	var data = event.data;
 
 	switch (data.command) {
@@ -301,15 +292,16 @@ onmessage = function(event) {
 			break;
 		}
 		case "input": {
-			// move on to resume
+			interpreter.feedInput(data.input);
+			// Move on to resume
 		}
 		case "resume": {
+			interpreter.halt = false;
+			run();
 			break;
 		}
-		case "pause": {
-			break;
-		}
-		case "stop": {
+		case "halt": {
+			interpreter.halt = true;
 			break;
 		}
 		default:
