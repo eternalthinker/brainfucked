@@ -121,7 +121,6 @@ function pause() {
 }
 
 function showError(message) {
-	alert(data.message);
 	outputUi.value += message;
 }
 

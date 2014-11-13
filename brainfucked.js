@@ -171,7 +171,6 @@ Interpreter.prototype.o_run = function()
 			}
 			case '<': {
 				this.memoryIdx -= count;
-				postMessage({ "command": "print", "value": this.memoryIdx });
 				if (this.memoryIdx < 0) {
 					throw {
 						name: "MemoryUnderflow",
@@ -223,7 +222,7 @@ Interpreter.prototype.o_run = function()
 					throw {
 						name: "UnmatchedBrackets",
 						level: "TERMINAL",
-						message: "Unmatched '[' found in source code"
+						message: "Unmatched '[' encountered in source code"
 					};
 				}
 				break;
@@ -236,7 +235,7 @@ Interpreter.prototype.o_run = function()
 					throw {
 						name: "UnmatchedBrackets",
 						level: "TERMINAL",
-						message: "Unmatched ']' found in source code"
+						message: "Unmatched ']' encountered in source code"
 					};
 				}
 				break;
