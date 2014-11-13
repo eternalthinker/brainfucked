@@ -93,8 +93,8 @@ Interpreter.prototype.optimizeProgram = function()
 		switch (op) {
 			case '>':
 			case '<':
-			case '-':
 			case '+':
+			case '-':
 			{
 				// at this point buffer.op is either repeating or null
 				buffer.op = op;
@@ -181,10 +181,7 @@ Interpreter.prototype.o_run = function()
 				break;
 			}
 			case '+': {
-				this.memory[this.memoryIdx] += count;
-				if (this.memory[this.memoryIdx] > 255) {
-					this.memory[this.memoryIdx] = 0;
-				}
+				this.memory[this.memoryIdx] = (this.memory[this.memoryIdx] + count) % 256;
 				break;
 			}
 			case '-': {

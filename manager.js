@@ -114,7 +114,7 @@ function stop() {
 function pause() {
 	curState = State.PAUSED;
 	w.postMessage({ "command": "halt" });	
-	stopButton.disabled = true;
+	stopButton.disabled = false;
 	pauseButton.disabled = true;
 	resumeButton.disabled = false;
 	runButton.disabled = true;
