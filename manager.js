@@ -31,13 +31,12 @@ w.onmessage = function(event){
 			break;
 		}
 		case "read": {
-			pause();
-			curState = State.READ;
+			setState(State.READ);
 			promptInput();
 			break;
 		}
 		case "error": {
-			curState = State.STOPPED;
+			setState(State.STOPPED);
 			showError(data.message);
 			break;
 		}
@@ -60,7 +59,7 @@ function run()
 	else {
 		resume();
 	}
-	curState = State.RUNNING;
+	setState(State.RUNNING);
 }
 
 function start()
@@ -68,23 +67,55 @@ function start()
 	outputUi = document.getElementById("output");
 	inputUi = document.getElementById("input");
 	runtimeUi = document.getElementById("runtime");
+	errorUi = document.getElementById("error");
 	runButton = document.getElementById("run");
 	resumeButton = document.getElementById("resume");
 	stopButton = document.getElementById("stop");
 	pauseButton = document.getElementById("pause");
+	optimizeCheck = document.getElementById("optimize");
 
 	outputUi.value = "";
 	runtimeUi.innerHTML = "";
+	errorUi.innerHTML = "";
 	var program = document.getElementById("program").value;
 	var input = inputUi.value;
-	var optimize = document.getElementById("optimize").checked;
-	runButton.disabled = true;
-	stopButton.disabled = false;
-	pauseButton.disabled = false;
-	resumeButton.disabled = true;
-	curState = State.RUNNING;
-
+	var optimize = optimizeCheck.checked;
+	
+	setState(State.RUNNING);
 	w.postMessage({ "command": "run", "program": program, "input": input, "optimize": optimize });
+}
+
+function setState(state) {
+	curState = state;
+	switch (curState) {
+		case State.RUNNING: {
+			runButton.disabled = true;
+			stopButton.disabled = false;
+			pauseButton.disabled = false;
+			resumeButton.disabled = true;
+			optimizeCheck.disabled = true;
+			break;
+		}
+		case State.READ:
+		case State.PAUSED: {
+			runButton.disabled = true;
+			stopButton.disabled = false;
+			pauseButton.disabled = true;
+			resumeButton.disabled = false;
+			optimizeCheck.disabled = true;
+			break;
+		}
+		case State.STOPPED: {
+			runButton.disabled = false;
+			stopButton.disabled = true;
+			pauseButton.disabled = true;
+			resumeButton.disabled = true;
+			optimizeCheck.disabled = false;
+			break;
+		}
+		default:
+			break;
+	}
 }
 
 function resume() {
@@ -95,33 +126,21 @@ function resume() {
 	else {
 		w.postMessage({ "command": "resume" });	
 	}
-	curState = State.RUNNING;
-	stopButton.disabled = false;
-	pauseButton.disabled = false;
-	resumeButton.disabled = true;
-	runButton.disabled = true;
+	setState(State.RUNNING);
 }
 
 function stop() {
-	curState = State.STOPPED;
+	setState(State.STOPPED);
 	w.postMessage({ "command": "halt" });
-	stopButton.disabled = true;
-	pauseButton.disabled = true;
-	runButton.disabled = false;	
-	resumeButton.disabled = true;
 }
 
 function pause() {
-	curState = State.PAUSED;
+	setState(State.PAUSED);
 	w.postMessage({ "command": "halt" });	
-	stopButton.disabled = false;
-	pauseButton.disabled = true;
-	resumeButton.disabled = false;
-	runButton.disabled = true;
 }
 
 function showError(message) {
-	outputUi.value += message;
+	errorUi.innerHTML = message;
 }
 
 function promptInput() {

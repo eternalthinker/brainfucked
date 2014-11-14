@@ -1,7 +1,5 @@
 
 
-// error, infy loop
-
 function Interpreter (program, input, optimize)
 {
 	// Essential components
@@ -96,7 +94,7 @@ Interpreter.prototype.optimizeProgram = function()
 			case '+':
 			case '-':
 			{
-				// at this point buffer.op is either repeating or null
+				// At this point buffer.op is either repeating or null
 				buffer.op = op;
 				buffer.count++;
 				break;
@@ -187,27 +185,7 @@ Interpreter.prototype.o_run = function()
 			case '-': {
 				this.memory[this.memoryIdx] -= count;
 				if (this.memory[this.memoryIdx] < 0) {
-					this.memory[this.memoryIdx] = 255;
-				}
-				break;
-			}
-			case '.': {
-				var c = String.fromCharCode(this.memory[this.memoryIdx]);
-				//this.output += c;
-				postMessage({ "command": "print", "value": c });
-				break;
-			}
-			case ',': {
-				if (this.inputIdx < this.input.length) {
-					this.memory[this.memoryIdx] = String.charCodeAt(this.input[this.inputIdx++]);
-				}
-				else {
-					this.memory[this.memoryIdx] = 0;
-					this.halt = true;
-					throw {
-						name: "EOF",
-						level: "PROCEDURAL"
-					};
+					this.memory[this.memoryIdx] += 256;
 				}
 				break;
 			}
@@ -233,6 +211,26 @@ Interpreter.prototype.o_run = function()
 						name: "UnmatchedBrackets",
 						level: "TERMINAL",
 						message: "Unmatched ']' encountered in source code"
+					};
+				}
+				break;
+			}
+			case '.': {
+				var c = String.fromCharCode(this.memory[this.memoryIdx]);
+				//this.output += c;
+				postMessage({ "command": "print", "value": c });
+				break;
+			}
+			case ',': {
+				if (this.inputIdx < this.input.length) {
+					this.memory[this.memoryIdx] = String.charCodeAt(this.input[this.inputIdx++]);
+				}
+				else {
+					this.memory[this.memoryIdx] = 0;
+					this.halt = true;
+					throw {
+						name: "EOF",
+						level: "PROCEDURAL"
 					};
 				}
 				break;
