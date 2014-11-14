@@ -11,7 +11,9 @@ A JavaScript interpreter for Brainfuck programming language
 - [x] Handle Errors
 - [x] Handle input
 - [x] Repeating Ops reduction : Optimizations
-- [ ] More optimizations
+- [x] More optimizations
+- [ ] jQuery magic to the UI
 - [ ] Better HTML styling - Bootstrap
 - [ ] Goodies - memory rendering etc
 - [ ] Example snippets, links
+- [ ] Input special characters

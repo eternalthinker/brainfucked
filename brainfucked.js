@@ -1,34 +1,55 @@
+/*
+ * Brainfucked - A JavaScript pure interpreter for Brainfuck programming language
+ *
+ * Author: Rahul Anand [ eternalthinker.co ], Nov 2014
+ *
+ * The main interpretor below runs as a Web Worker, with a defined set of
+ * commands to and fro. Can work with any external JavaScript following the API.
+ * This is a pure 'interpreter' except for optional optimizations.
+ *
+ * Documentation at: <pending>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+*/
 
+/* ================== Core Interpreter ================ */
 
 function Interpreter (program, input, optimize)
 {
 	// Essential components
-	this.program = program.trim();
+	this.program = program;
 	this.input = input;
 
-	this.pc = 0; // program counter
+	this.pc = 0; // Program counter
 	this.inputIdx = 0;
 	this.memory = [0];
 	this.memoryIdx = 0;
-	this.output = "";
+	// this.output = "";
 
 	// Optimization
 	this.jumps = { };
-	this.optimized = false;
+	this.optimized = optimize;
+
+	// Op codes
+	this.LEFT = -8;
+	this.RIGHT = -7;
+	this.PLUS = -6;
+	this.MINUS = -5;
+	this.LOOP_BEGIN = -4;
+	this.LOOP_END = -3;
+	this.PRINT = -2;
+	this.READ = -1;
 
 	// Goodies
 	this.startTime = Date.now(); 
 	this.runTime = 0;
-	this.halt = false;
+	this._halt = false;
 
 	// Actions
-	if (optimize) {
-		this.optimizeProgram();
-		this.optimized = true;
-	}
-	else {
-		this.preProcess();
-	}
+	this.preProcess(optimize);
 	this.runTime += Date.now() - this.startTime;
 }
 
@@ -38,127 +59,165 @@ Interpreter.prototype.feedInput = function(input)
 	this.inputIdx = 0;
 }
 
+Interpreter.prototype.halt = function()
+{
+	this._halt = true;
+}
+
+Interpreter.prototype.unhalt = function()
+{
+	this._halt = false;
+}
+
 Interpreter.prototype.fin = function() 
 {
-	this.halt = true;
+	this._halt = true;
 	var timeTaken = (this.runTime/1000.0) + "s";
 	postMessage({ "command": "fin", "runtime": timeTaken });
 }
 
-Interpreter.prototype.preProcess = function()
-{
-	// Pre-compute jumps mapping
-	var stack = [];
-	var programArr = [];
-	for (var pc = 0; pc < this.program.length; ++pc) {
-		var op = this.program[pc];
-		programArr.push(op);
-		if (op == "[") {
-			stack.push(pc);
-		}
-		else if (op == "]") {
-			var lmatch = stack.pop();
-			this.jumps[lmatch] = pc;
-			this.jumps[pc] = lmatch;
-		}
-	}
-	this.program = programArr;
-}
-
-Interpreter.prototype.optimizeProgram = function()
+Interpreter.prototype.preProcess = function(optimize)
 {
 	var o_program = [];
 	var o_pc = -1;
-	var stack = [];
-	var buffer = { op: null, count: 0 };
+	var stack = []; // Keep track of brackets and map indices of matches
+	var buffer = { op: null, int_op: 0, count: 0 }; // Optimization mode: count repeated ops
 
-	this.program = this.program.replace(/[^><+-.,\[\]]/g, "");
+	this.program = this.program.replace(/[^><+-.,\[\]]/g, ""); // Remove non-op characters
 
 	for (var pc = 0; pc < this.program.length; ++pc) {
 		var op = this.program[pc];
 
-		if (buffer.op != null && buffer.op != op) {
+		// Optimization mode: If ><+- is buffered, and a different op is encountered, write buffer to program source
+		if (optimize && buffer.op != null && buffer.op != op) {
 			if (buffer.count > 1) {
 				o_program.push(buffer.count);
 				o_pc++;
 			} 
-			o_program.push(buffer.op);
+			o_program.push(buffer.int_op);
 			o_pc++;
 			buffer.op = null;
+			buffer.int_op = 0;
 			buffer.count = 0;
 		}
 
 		switch (op) {
-			case '>':
-			case '<':
-			case '+':
-			case '-':
-			{
-				// At this point buffer.op is either repeating or null
+			case '<': {
+				if (! optimize) {
+					o_program[++o_pc] = this.LEFT;
+					break;
+				}
+				// Optimization mode: Just buffer the count of this op as long as it repeats
+				// (Likewise for >+-)
+				buffer.int_op = this.LEFT;
+				buffer.op = op;
+				buffer.count++;
+				break;
+			}
+			case '>': {
+				if (! optimize) {
+					o_program[++o_pc] = this.RIGHT;
+					break;
+				}
+				buffer.int_op = this.RIGHT;
+				buffer.op = op;
+				buffer.count++;
+				break;
+			}
+			case '+': {
+				if (! optimize) {
+					o_program[++o_pc] = this.PLUS;
+					break;
+				}
+				buffer.int_op = this.PLUS;
+				buffer.op = op;
+				buffer.count++;
+				break;
+			}
+			case '-': {
+				if (! optimize) {
+					o_program[++o_pc] = this.MINUS;
+					break;
+				}
+				buffer.int_op = this.MINUS;
 				buffer.op = op;
 				buffer.count++;
 				break;
 			}
 			case '[': 
 			{
-				o_program.push(op);
-				o_pc++;
+				o_program[++o_pc] = this.LOOP_BEGIN;
 				stack.push(o_pc);
 				break;
 			}
 			case ']': 
 			{
-				o_program.push(op);
-				o_pc++;
+				o_program[++o_pc] = this.LOOP_END;
 				var lmatch = stack.pop();
 				this.jumps[lmatch] = o_pc;
 				this.jumps[o_pc] = lmatch;
 				break;
 			}
-			case '.':
+			case '.': {
+				o_program[++o_pc] = this.PRINT;
+				break;
+			}
 			case ',':
 			{
-				o_program.push(op);
-				o_pc++;
+				o_program[++o_pc] = this.READ;
+				break;
 			}
 			default:
 				break;
 		}
-	}
-	if (buffer.op != null) { // ><+- might remain in buffer if program ends with them
+	} // End of program
+
+	// Optimization mode: ><+- will remain in buffer if program ends with them
+	if (optimize && buffer.op != null) {  
 		if (buffer.count > 1) {
 			o_program.push(buffer.count);
 			o_pc++;
 		} 
-		o_program.push(buffer.op);
+		o_program.push(buffer.int_op);
 		o_pc++;
 		buffer.op = null;
 		buffer.count = 0;
+		buffer.int_op = 0;
 	}
 	this.program = o_program;
 };
 
-Interpreter.prototype.o_run = function()
+
+Interpreter.prototype.step_run = function()
 {
-	if (this.halt) {
+	/*
+	 * Run in steps of 50,000 iterations; setTimeout() at the end to run next step
+	 * This momentary relishing of control help listen to control-commands to this Web Worker
+	*/
+
+	if (this._halt) {
 		throw {
 			name: "HaltInterpreter",
 			level: "PROCEDURAL"
 		};
 	}
+
 	this.startTime = Date.now();
 	var count = 1;
 	var iters = 50000;
+
 	while(this.pc < this.program.length && --iters > 0) {
 		var op = this.program[this.pc];
 
-		if (typeof op == 'number') {
+		// Optimization mode: Any positive integer is encoded op count
+		if (op > 0) {
 			count = op;
 			op = this.program[++this.pc];
 		}
 
+		// Order cases by average frequency
 		switch (op) {
-			case '>': {
+			case this.RIGHT: {
 				this.memoryIdx += count;
 				if (this.memoryIdx >= this.memory.length) {
 					for (var i = this.memoryIdx - this.memory.length; i >= 0; --i) {
@@ -167,7 +226,7 @@ Interpreter.prototype.o_run = function()
 				}
 				break;
 			}
-			case '<': {
+			case this.LEFT: {
 				this.memoryIdx -= count;
 				if (this.memoryIdx < 0) {
 					throw {
@@ -178,18 +237,18 @@ Interpreter.prototype.o_run = function()
 				}
 				break;
 			}
-			case '+': {
+			case this.PLUS: {
 				this.memory[this.memoryIdx] = (this.memory[this.memoryIdx] + count) % 256;
 				break;
 			}
-			case '-': {
+			case this.MINUS: {
 				this.memory[this.memoryIdx] -= count;
 				if (this.memory[this.memoryIdx] < 0) {
 					this.memory[this.memoryIdx] += 256;
 				}
 				break;
 			}
-			case '[': {
+			case this.LOOP_BEGIN: {
 				if (this.memory[this.memoryIdx] == 0) {
 					this.pc = this.jumps[this.pc];
 				}
@@ -202,7 +261,7 @@ Interpreter.prototype.o_run = function()
 				}
 				break;
 			}
-			case ']': {
+			case this.LOOP_END: {
 				if (this.memory[this.memoryIdx] != 0) {
 					this.pc = this.jumps[this.pc];
 				}
@@ -215,19 +274,19 @@ Interpreter.prototype.o_run = function()
 				}
 				break;
 			}
-			case '.': {
+			case this.PRINT: {
 				var c = String.fromCharCode(this.memory[this.memoryIdx]);
-				//this.output += c;
+				// this.output += c;
 				postMessage({ "command": "print", "value": c });
 				break;
 			}
-			case ',': {
+			case this.READ: {
 				if (this.inputIdx < this.input.length) {
 					this.memory[this.memoryIdx] = String.charCodeAt(this.input[this.inputIdx++]);
 				}
 				else {
 					this.memory[this.memoryIdx] = 0;
-					this.halt = true;
+					this._halt = true;
 					throw {
 						name: "EOF",
 						level: "PROCEDURAL"
@@ -240,27 +299,27 @@ Interpreter.prototype.o_run = function()
 		}
 		count = 1;
 		++this.pc;
-	} // end of while
+	} // End of while
 
 	this.runTime += Date.now() - this.startTime;
 	if (this.pc >= this.program.length) {
 		this.fin();
 	}
 	else {
-		setTimeout(run, 1);
+		setTimeout(this.run.bind(this), 1);
 	}
 }
 
-function run()
+Interpreter.prototype.run = function()
 {
 	try {
-		interpreter.o_run();
+		this.step_run();
 	}
 	catch (err) {
 		switch (err.level) {
 			case "TERMINAL": {
 				postMessage({ "command": "error", "message": err.message });
-				interpreter.fin();
+				this.fin();
 				break;
 			}
 			case "PROCEDURAL": {
@@ -274,6 +333,10 @@ function run()
 		}
 	}
 }
+/* ================== End of Core Interpreter ================ */
+
+
+/* ================== Web Worker communication point ================ */
 
 onmessage = function(event) 
 {
@@ -282,28 +345,27 @@ onmessage = function(event)
 	switch (data.command) {
 		case "run": {
 			interpreter = new Interpreter(data.program, data.input, data.optimize);
-			run();
+			interpreter.run();
 			break;
 		}
 		case "input": {
 			interpreter.feedInput(data.input);
-			// Move on to resume
+			// No break; Move on to resume
 		}
 		case "resume": {
-			interpreter.halt = false;
-			run();
+			interpreter.unhalt();
+			interpreter.run();
 			break;
 		}
 		case "halt": {
-			interpreter.halt = true;
+			interpreter.halt();
 			break;
 		}
 		default:
 			break;
 	}
 };
+/* ================== End of Web Worker communication point ================ */
 
-
-
-
+var interpreter = null;
 
