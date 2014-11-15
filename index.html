@@ -7,31 +7,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Brainfucked - a Javascript interpreter for Brainfuck programming language</title>
     
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
+
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
-      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
     <script src="manager.js"></script>
-
-    <!-- <script>
-        var startTime = Date.now();
-        var arr1 = Array.apply(null, new Array(30000)).map(Number.prototype.valueOf,0);
-        document.write(Date.now() - startTime, " : ");
-
-        startTime = Date.now();
-        var arr2 = [];
-        var limit = 30000;
-        while (true) {
-            arr2[arr2.length] = 0;
-            if (arr2.length == 30000)
-                break;
-        }
-        document.write(Date.now() - startTime);
-    </script> -->
 </head>
 
 <body>
@@ -43,7 +34,7 @@
     <div>
         <section>
         Program:
-         <textarea id="program" rows="5" cols="70">
+         <textarea id="program" class="form-control" rows="5">
 Hello World program
 ++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
          </textarea> 
@@ -69,7 +60,7 @@ Hello World program
 
         <section>
         Output:
-         <textarea id="output" rows="20" cols="100" readonly></textarea> 
+         <textarea id="output" class="form-control" rows="20" readonly></textarea> 
          </section>
 
         

@@ -31,9 +31,11 @@ function Interpreter (program, input, optimize)
 
     // Optimization
     this.jumps = { };
-    this.optimized = optimize;
+    //this.optimized = optimize;
 
-    // Op codes
+    // Op codes:
+    // Negative values - to distinguish from positive values that 
+    // we'll use to encode op counts in an optimization
     this.LEFT = -8;
     this.RIGHT = -7;
     this.PLUS = -6;
@@ -72,8 +74,7 @@ Interpreter.prototype.unhalt = function()
 Interpreter.prototype.fin = function() 
 {
     this._halt = true;
-    var timeTaken = (this.runTime/1000.0) + "s";
-    postMessage({ "command": "fin", "runtime": timeTaken });
+    postMessage({ "command": "fin", "runtime": this.runTime });
 }
 
 Interpreter.prototype.preProcess = function(optimize)
@@ -81,7 +82,11 @@ Interpreter.prototype.preProcess = function(optimize)
     var o_program = [];
     var o_pc = -1;
     var stack = []; // Keep track of brackets and map indices of matches
-    var buffer = { op: null, int_op: 0, count: 0 }; // Optimization mode: count repeated ops
+    /* 
+       Optimization mode: encode count of repeated ops
+       + + + . . - - - [ [ ] ] , , > > < <  becomes  3 + . . 3 - [ [ ] ] , , 2 > 2 <
+    */
+    var buffer = { op: null, int_op: 0, count: 0 }; 
 
     this.program = this.program.replace(/[^><+-.,\[\]]/g, ""); // Remove non-op characters
 

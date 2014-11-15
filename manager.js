@@ -7,146 +7,148 @@
     // Sorry! No Web Worker support..
 } */
 
-var outputUi = null;
-var inputUi = null;
-var runtimeUi = null;
-var State = Object.freeze({
-    RUNNING: 1,
-    PAUSED: 2,
-    STOPPED: 3,
-    READ: 4
-});
-var curState = State.STOPPED;
+$(document).ready(function() {
+    var $output_ui = $('#output');
+    var $input_ui = $('#input');
+    var $runtime_ui = $('#runtime');
+    var $error_ui = $('#error');
+    var $run_btn = $('#run');
+    var $stop_btn = $('#stop');
+    var $pause_btn = $('#pause');
+    var $resume_btn = $('#resume');
+    var $optimize_chk = $('#optimize');
 
-if(typeof(w) == "undefined") {
-    w = new Worker("brainfucked.js");
-}
+    $run_btn.click(start);
+    $stop_btn.click(stop);
+    $pause_btn.click(pause);
+    $resume_btn.click(resume);
 
-w.onmessage = function(event){
-    var data = event.data;
+    var State = Object.freeze({
+        RUNNING: 1,
+        PAUSED: 2,
+        STOPPED: 3,
+        READ: 4
+    });
+    var curState;
 
-    switch (data.command) {
-        case "print": {
-            outputUi.value += data.value;
-            break;
-        }
-        case "read": {
-            setState(State.READ);
-            promptInput();
-            break;
-        }
-        case "error": {
-            setState(State.STOPPED);
-            showError(data.message);
-            break;
-        }
-        case "fin": {
-            runtimeUi.innerHTML = data.runtime;
-            stop();
-            break;
-        }
-        default:
-            break;
-    }
-};
-
-
-function run()
-{
-    if (curState === State.STOPPED) {
-        start();
-    }
-    else {
-        resume();
-    }
-    setState(State.RUNNING);
-}
-
-function start()
-{
-    outputUi = document.getElementById("output");
-    inputUi = document.getElementById("input");
-    runtimeUi = document.getElementById("runtime");
-    errorUi = document.getElementById("error");
-    runButton = document.getElementById("run");
-    resumeButton = document.getElementById("resume");
-    stopButton = document.getElementById("stop");
-    pauseButton = document.getElementById("pause");
-    optimizeCheck = document.getElementById("optimize");
-
-    outputUi.value = "";
-    runtimeUi.innerHTML = "";
-    errorUi.innerHTML = "";
-    var program = document.getElementById("program").value;
-    var input = inputUi.value;
-    var optimize = optimizeCheck.checked;
-    
-    setState(State.RUNNING);
-    w.postMessage({ "command": "run", "program": program, "input": input, "optimize": optimize });
-}
-
-function setState(state) {
-    curState = state;
-    switch (curState) {
-        case State.RUNNING: {
-            runButton.disabled = true;
-            stopButton.disabled = false;
-            pauseButton.disabled = false;
-            resumeButton.disabled = true;
-            optimizeCheck.disabled = true;
-            break;
-        }
-        case State.READ:
-        case State.PAUSED: {
-            runButton.disabled = true;
-            stopButton.disabled = false;
-            pauseButton.disabled = true;
-            resumeButton.disabled = false;
-            optimizeCheck.disabled = true;
-            break;
-        }
-        case State.STOPPED: {
-            runButton.disabled = false;
-            stopButton.disabled = true;
-            pauseButton.disabled = true;
-            resumeButton.disabled = true;
-            optimizeCheck.disabled = false;
-            break;
-        }
-        default:
-            break;
-    }
-}
-
-function resume() {
-    if (curState === State.READ) {
-        var input = inputUi.value;
-        w.postMessage({ "command": "input", "input": input });
-    }
-    else {
-        w.postMessage({ "command": "resume" }); 
-    }
-    setState(State.RUNNING);
-}
-
-function stop() {
     setState(State.STOPPED);
-    w.postMessage({ "command": "halt" });
-}
 
-function pause() {
-    setState(State.PAUSED);
-    w.postMessage({ "command": "halt" });   
-}
+/* ================== BF Worker ================ */
 
-function showError(message) {
-    errorUi.innerHTML = message;
-}
+    var bf = new Worker("brainfucked.js");
 
-function promptInput() {
-    inputUi.value = "";
-    // log consumed input
-    // check for valid input (ascii)
-    alert("Enter input..");
-}
+    bf.onmessage = function(event){
+        var data = event.data;
+
+        switch (data.command) {
+            case "print": {
+                $output_ui.val($output_ui.val() + data.value);
+                break;
+            }
+            case "read": {
+                setState(State.READ);
+                promptInput();
+                break;
+            }
+            case "error": {
+                setState(State.STOPPED);
+                showError(data.message);
+                break;
+            }
+            case "fin": {
+                $runtime_ui.text(data.runtime);
+                stop();
+                break;
+            }
+            default:
+                break;
+        }
+    };
+/* ================== End of BF Worker ================ */
+
+
+/* ================== UI utility functions ================ */
+
+    function start()
+    {
+        $output_ui.val("");
+        $runtime_ui.text("");
+        $error_ui.text("");
+        var program = $('#program').val();
+        var input = $input_ui.val();
+        var optimize = $optimize_chk.prop('checked');
+        
+        setState(State.RUNNING);
+        bf.postMessage({ "command": "run", "program": program, "input": input, "optimize": optimize });
+    }
+
+    function stop() {
+        setState(State.STOPPED);
+        bf.postMessage({ "command": "halt" });
+    }
+
+    function pause() {
+        setState(State.PAUSED);
+        bf.postMessage({ "command": "halt" });   
+    }
+
+    function resume() {
+        if (curState === State.READ) {
+            var input = $input_ui.val();
+            bf.postMessage({ "command": "input", "input": input });
+        }
+        else {
+            bf.postMessage({ "command": "resume" }); 
+        }
+        setState(State.RUNNING);
+    }
+
+    function setState(state) {
+        curState = state;
+        switch (curState) {
+            case State.RUNNING: {
+                $run_btn.prop('disabled', true);
+                $stop_btn.prop('disabled', false);
+                $pause_btn.prop('disabled', false);
+                $resume_btn.prop('disabled', true);
+                $optimize_chk.prop('disabled', true);
+                break;
+            }
+            case State.READ:
+            case State.PAUSED: {
+                $run_btn.prop('disabled', true);
+                $stop_btn.prop('disabled', false);
+                $pause_btn.prop('disabled', true);
+                $resume_btn.prop('disabled', false);
+                $optimize_chk.prop('disabled', true);
+                break;
+            }
+            case State.STOPPED: {
+                $run_btn.prop('disabled', false);
+                $stop_btn.prop('disabled', true);
+                $pause_btn.prop('disabled', true);
+                $resume_btn.prop('disabled', true);
+                $optimize_chk.prop('disabled', false);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    function showError(message) {
+        $error_ui.text(message);
+    }
+
+    function promptInput() {
+        $input_ui.val("");
+        // log consumed input
+        // check for valid input (ascii)
+        alert("Enter input..");
+    }
+/* ================== End of UI utility functions ================ */
+
+}); // end of document.ready closure
+
+
 

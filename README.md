@@ -12,7 +12,7 @@ A JavaScript interpreter for Brainfuck programming language
 - [x] Handle input
 - [x] Repeating Ops reduction : Optimizations
 - [x] More optimizations
-- [ ] jQuery magic to the UI
+- [x] jQuery magic to the UI
 - [ ] Better HTML styling - Bootstrap
 - [ ] Goodies - memory rendering etc
 - [ ] Example snippets, links
