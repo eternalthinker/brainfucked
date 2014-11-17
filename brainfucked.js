@@ -3,8 +3,8 @@
  *
  * Author: Rahul Anand [ eternalthinker.co ], Nov 2014
  *
- * The main interpretor below runs as a Web Worker, with a defined set of
- * commands to and fro. Can work with any external JavaScript following the API.
+ * Independent interpreter module which runs as a Web Worker.
+ * Any external JavaScript can communicate through relevant command messages.
  * This is a pure 'interpreter' except for optional optimizations.
  *
  * Documentation at: <pending>

@@ -148,7 +148,7 @@ $(document).ready(function() {
     }
 /* ================== End of UI utility functions ================ */
 
-}); // end of document.ready closure
+}); // End of document.ready closure
 
 
 

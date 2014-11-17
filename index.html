@@ -25,47 +25,73 @@
     <script src="manager.js"></script>
 </head>
 
-<body>
-<section>
-    <header>
-        <h1>Brainfucked</h1>
-        <h2>A JavaScript interpreter for Brainfuck programming language</h2>
-    </header>
-    <div>
-        <section>
+<body style="min-width:800px;">
+
+  <header>
+    <div class="container-fluid">
+      <h1>Brainfucked</h1>
+      <h2>A JavaScript interpreter for Brainfuck programming language</h2>
+    </div>
+  </header>
+
+  <div class="container-fluid">
+
+    <div class="row">
+      <div class="col-md-12">
         Program:
-         <textarea id="program" class="form-control" rows="5">
+        <textarea id="program" class="form-control" rows="5">
 Hello World program
 ++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
-         </textarea> 
-         </section>
-
-        <section>
-        Input:
-        <input id="input" type="text">
-        <input type="checkbox" name="optimize" value="optimize" id="optimize" checked> <span>Minor optimization</span>
-         </section>
-
-        <section>
-        <button type="button" id="run" onClick="run()">Run</button>
-        <button type="button" id="resume" onClick="resume()" disabled>Resume</button>
-        <button type="button" id="pause" onClick="pause()" disabled>Pause</button>
-        <button type="button" id="stop" onClick="stop()" disabled>Stop</button>
-         </section>
-
-         <section>
-            <span>Runtime:</span> <span id="runtime"></span> <br />
-            <span id="error"></span>
-         </section>
-
-        <section>
-        Output:
-         <textarea id="output" class="form-control" rows="20" readonly></textarea> 
-         </section>
-
-        
+        </textarea> 
+      </div>
     </div>
-</section>
+
+    <div class="row">
+      <div class="col-md-12">
+        <input id="input" type="text" class="form-control" placeholder="Enter program's input here">
+      </div>
+    </div>
+
+
+    <div class="row" style="margin-top:10px; margin-bottom:10px;">  
+      <div class="col-xs-6 col-sm-5 col-lg-3">
+        <button type="button" id="run" class="btn btn-success" disabled>Run</button>
+        <button type="button" id="resume" class="btn btn-success" disabled>Resume</button>
+        <button type="button" id="pause" class="btn btn-warning" disabled>Pause</button>
+        <button type="button" id="stop" class="btn btn-danger" disabled>Stop</button>
+      </div>
+
+      <div class="col-xs-4 col-sm-3 col-lg-2 text-left">
+        <div class="checkbox">
+        <label>
+          <input type="checkbox" id="optimize" checked> Minor optimization
+        </label>
+        </div>
+      </div>
+
+      <div class="col-xs-2 col-sm-2 col-lg-2 text-left">
+        <button type="button" id="stop" class="btn btn-info">Info</button>
+      </div>
+    </div>
+
+
+    <div class="row">  
+      <div class="col-md-12">
+        <span>Runtime:</span> <span id="runtime"></span> <br />
+      </div>
+      <pan id="error"></span>
+      </div>
+
+      <div class="row">  
+        <div class="col-md-12">
+          Output:
+          <textarea id="output" class="form-control" rows="15" readonly></textarea> 
+        </div>
+      </div>
+
+
+    </div>
+
 </body>  
   
 </html>
