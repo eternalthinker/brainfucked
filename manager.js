@@ -32,19 +32,20 @@ $(document).ready(function() {
         FINISHED: "FINISHED"
     });
 
+    // Quick lookup for Bootstrap styling class names
     var StateClass = Object.freeze({
-        RUNNING: "alert-success",
-        PAUSED: "alert-warning",
-        STOPPED: "alert-danger",
-        READ_WAITING: "alert-info",
-        FINISHED: "alert-success"
+        RUNNING: ["alert-success", "play"],
+        PAUSED: ["alert-warning", "pause"],
+        STOPPED: ["alert-danger", "remove"],
+        READ_WAITING: ["alert-info", "edit"],
+        FINISHED: ["alert-success", "ok"]
     });
 
-    var curState;
+    var curState = State.STOPPED;
     var curNotifyClass = "alert-danger";
 
     $output_ui.val("");
-    $runtime_ui.text("Runtime: NIL");
+    $runtime_ui.text("");
     $notify_ui.hide();
     setState(State.STOPPED);
 
@@ -79,7 +80,7 @@ $(document).ready(function() {
                 else {
                     runtime_str = (runtime_ms / 1000.0) + " s";
                 } 
-                $runtime_ui.text("Runtime: " + runtime_str);
+                $runtime_ui.text(runtime_str);
                 setState(State.FINISHED);
                 break;
             }
@@ -95,7 +96,7 @@ $(document).ready(function() {
     function start()
     {
         $output_ui.val("");
-        $runtime_ui.text("Runtime: NIL");
+        $runtime_ui.text("");
         $notify_ui.hide();
         var program = $('#program').val();
         var input = $input_ui.val();
@@ -127,9 +128,9 @@ $(document).ready(function() {
     }
 
     function setState(state) {
-        $state_ui.removeClass(StateClass[curState]);
-        $state_ui.addClass(StateClass[state]);
-        $state_ui.text(state);
+        $state_ui.removeClass(StateClass[curState][0]);
+        $state_ui.addClass(StateClass[state][0]);
+        $state_ui.html("<span class='glyphicon glyphicon-" + StateClass[state][1] + "'></span> " + state);
         curState = state;
         switch (state) {
             case State.RUNNING: {
