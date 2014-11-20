@@ -25,14 +25,29 @@
     <script src="manager.js"></script>
 </head>
 
-<body style="min-width:800px;">
-
-  <header>
+<body>
+  <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" id="main-navigation">
     <div class="container-fluid">
-      <h1>Brainfucked</h1>
-      <h2>A JavaScript interpreter for Brainfuck programming language</h2>
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Brainfucked</a>
+        <p class="navbar-text hidden-xs">A Javascript interpreter for Brainfuck programming language</p>
+        <p class="navbar-text visible-xs-inline-block">An interpreter for Brainfuck language</p>
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navigation-collapse-content">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+      <div class="collapse navbar-collapse navbar-right" id="main-navigation-collapse-content">
+        <ul class="nav navbar-nav">
+          <li><a href="http://eternal-thinker.com/">Home</a></li>
+          <li><a href="http://github.com/eternalthinker">Github</a></li>
+          <li><a href="https://github.com/eternalthinker/brainfucked/fork">Fork</a></li>
+        </ul>
+      </div>
     </div>
-  </header>
+  </nav>
 
   <div class="container-fluid">
 
@@ -79,7 +94,7 @@ Hello World program
       <div class="col-md-12">
         <span class="alert alert-success" style="margin-right: 5px;">
           <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
-          <span class="sr-only">Runtime: </span>
+          <span class="sr-only">Runtime</span>
           <span id="runtime"></span>
         </span>
         <b><span id="state" class="alert"></span></b>

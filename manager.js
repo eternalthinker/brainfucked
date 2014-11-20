@@ -174,6 +174,7 @@ $(document).ready(function() {
 
     function promptInput() {
         $input_ui.val("");
+        $input_ui.focus();
         // log consumed input
         // check for valid input (ascii)
         $notify_ui.removeClass(curNotifyClass);

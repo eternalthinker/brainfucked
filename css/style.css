@@ -1,5 +1,14 @@
 
+body { 
+	padding-top: 70px; 
+	min-width: 768px;
+}
+
 textarea { 
-	font-family: Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+	font-family: Consolas,Monaco,'Lucida Console','Liberation Mono','DejaVu Sans Mono','Bitstream Vera Sans Mono','Courier New', monospace;
 	font-family: monospace;
+}
+
+#main-navigation {
+
 }
