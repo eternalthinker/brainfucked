@@ -8,6 +8,7 @@
 } */
 
 $(document).ready(function() {
+    var $program_ui = $('#program');
     var $output_ui = $('#output');
     var $input_ui = $('#input');
     var $runtime_ui = $('#runtime');
@@ -98,7 +99,7 @@ $(document).ready(function() {
         $output_ui.val("");
         $runtime_ui.text("");
         $notify_ui.hide();
-        var program = $('#program').val();
+        var program = $program_ui.val();
         var input = $input_ui.val();
         var optimize = $optimize_chk.prop('checked');
         setState(State.RUNNING);
@@ -157,6 +158,7 @@ $(document).ready(function() {
                 $pause_btn.prop('disabled', true);
                 $resume_btn.prop('disabled', true);
                 $optimize_chk.prop('disabled', false);
+                $notify_ui.hide();
                 break;
             }
             default:
@@ -180,7 +182,7 @@ $(document).ready(function() {
         $notify_ui.removeClass(curNotifyClass);
         curNotifyClass = "alert-info";
         $notify_ui.addClass(curNotifyClass);
-        $notify_ui.text("Program is waiting for input. Enter your input in the proper field and resume.");
+        $notify_ui.text("Program is awaiting input. Enter your input and resume.");
         $notify_ui.show();
     }
 /* ================== End of UI utility functions ================ */

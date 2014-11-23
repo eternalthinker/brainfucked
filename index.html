@@ -26,12 +26,12 @@
 </head>
 
 <body>
-  <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" id="main-navigation">
+  <nav class="navbar navbar-default navbar-fixed-top" role="navigation" id="main-navigation">
     <div class="container-fluid">
       <div class="navbar-header">
         <a class="navbar-brand" href="#">Brainfucked</a>
-        <p class="navbar-text hidden-xs">A Javascript interpreter for Brainfuck programming language</p>
-        <p class="navbar-text visible-xs-inline-block">An interpreter for Brainfuck language</p>
+        <p class="navbar-text hidden-sm hidden-xs">A Javascript interpreter for Brainfuck programming language</p>
+        <p class="navbar-text visible-sm-inline-block visible-xs-inline-block">An interpreter for Brainfuck programs</p>
         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navigation-collapse-content">
           <span class="sr-only">Toggle navigation</span>
           <span class="icon-bar"></span>
@@ -41,6 +41,7 @@
       </div>
       <div class="collapse navbar-collapse navbar-right" id="main-navigation-collapse-content">
         <ul class="nav navbar-nav">
+          <li><a href="#about">?</a></li>
           <li><a href="http://eternal-thinker.com/">Home</a></li>
           <li><a href="http://github.com/eternalthinker">Github</a></li>
           <li><a href="https://github.com/eternalthinker/brainfucked/fork">Fork</a></li>
@@ -53,8 +54,8 @@
 
     <div class="row">
       <div class="col-md-12">
-        Program:
-        <textarea id="program" class="form-control" rows="5">
+        <span style="color: #aaa;"><b>Program:</b></span>
+        <textarea id="program" class="form-control" rows="10">
 Hello World program
 ++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
         </textarea> 
@@ -85,14 +86,14 @@ Hello World program
       </div>
 
       <div class="col-xs-2 col-sm-2 col-lg-2 text-left">
-        <button type="button" id="stop" class="btn btn-info">Info</button>
+        <button type="button" id="memory" class="btn btn-info" disabled>Memory</button>
       </div>
     </div>
 
 
     <div class="row" style="margin-top:20px; margin-bottom:20px;">  
       <div class="col-md-12">
-        <span class="alert alert-success" style="margin-right: 5px;">
+        <span class="alert alert-success" style="margin-right:5px;">
           <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
           <span class="sr-only">Runtime</span>
           <span id="runtime"></span>
@@ -104,12 +105,59 @@ Hello World program
 
     <div class="row">  
       <div class="col-md-12">
-        <textarea id="output" class="form-control" rows="15" readonly></textarea> 
+        <textarea id="output" class="form-control" rows="20" wrap="off" readonly></textarea> 
       </div>
     </div>
 
+    <div class="row">
+      <div class="col-md-12">
+      <article id="about">
+        <section>
+          <h2>About</h2>
+          <p>
+            Brainfuck is a minimal programming language which consists of 8 commands (<code>&lt; &gt; + - [ ] . ,</code>) and an instruction pointer
+            which operates on a memory tape.<br> 
+            Detailed explanation can be viewed in the <a href="http://en.wikipedia.org/wiki/Brainfuck#Commands" target="_blank">Wikipedia page</a>.<br> 
+            A collection of program snippets are available at the <a href="http://esoteric.sange.fi/brainfuck/bf-source/prog/" target="_blank">Brainfuck archive</a>.
+          </p>
+          <h4>Examples <small>(click to load)</small></h4>
+          <p>
+            <button type="button" id="helloworld" class="btn btn-info load-pgm" disabled>Hello World</button>
+            <button type="button" id="bsort" class="btn btn-info load-pgm" disabled>Bubble Sort</button>
+            <button type="button" id="mandelbrot" class="btn btn-info load-pgm" disabled>Mandelbrot</button>
+          </p>
+        </section>
 
+        <section>
+          <h3>Implementation assumptions</h3>
+          <p>
+            There are a few implementation specific factors to designing a Brainfuck interpreter. <em>Brainfucked</em> implements the following design:<br>
+            <ul>
+              <li><strong>Cell size:</strong> Classical 1 byte operands. Essentially operates in the ASCII range of 0 to 255</li>
+              <li><strong>Memory size:</strong> Memory tape expands infinitely to the right. Causes error on moving beyond the left</li>
+              <li><strong>Wrapping:</strong> Memory values wrap at both extremes of ASCII range. 0 decrements to 255; 255 increments to 0</li>
+              <li><strong>EOF behaviour:</strong> Will always prompt for input when there is no more to consume</li>
+            </ul>
+          </p>
+        </section>
+
+        <section>
+          <h3>Optimization</h3>
+          <p>
+            About the optional 'Minor optimization' in this interpreter: when enabled, the pre-processing fuses together multiple consecutive 
+            occurrences of the 4 operands <code>&lt; &gt; + - </code><br>
+            <code>+++..---[[]],,&gt;&gt;&lt;&lt;</code>  becomes  <code>3+..3-[[]],,2&gt;2&lt;</code><br>
+            Notice that the program now becomes a superset of Brainfuck language.<br>
+            Speed savings are significant on time intensive programs like Mandelbrot (~20s compared to ~130s).
+          </p>
+        </section>
+      </article>
     </div>
+    </div>
+
+    <div class="row" style="margin-top:40px"></div>
+
+    </div> <!-- main container -->
 
 </body>  
   

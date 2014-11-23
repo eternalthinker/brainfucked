@@ -3,7 +3,7 @@ Brainfucked
 
 A JavaScript interpreter for Brainfuck programming language
 
-*Only [basic version](http://eternalthinker.github.io/brainfucked) is up*
+The working version can be viewed [here](http://eternalthinker.github.io/brainfucked)
 
 **TODO**
 - [x] Basic compiler
@@ -11,9 +11,8 @@ A JavaScript interpreter for Brainfuck programming language
 - [x] Handle Errors
 - [x] Handle input
 - [x] Repeating Ops reduction : Optimizations
-- [x] More optimizations
 - [x] jQuery magic to the UI
-- [ ] Better HTML styling - Bootstrap
+- [x] Better HTML styling - Bootstrap
 - [ ] Goodies - memory rendering etc
 - [ ] Example snippets, links
 - [ ] Input special characters
