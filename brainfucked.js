@@ -70,10 +70,14 @@ Interpreter.prototype.unhalt = function()
     this._halt = false;
 }
 
-Interpreter.prototype.fin = function() 
+Interpreter.prototype.fin = function(halted) 
 {
     this._halt = true;
-    postMessage({ "command": "fin", "runtime": this.runTime });
+    postMessage({ "command": "fin", 
+                  "runtime": this.runTime, 
+                  "halted": halted, 
+                  "memory": { "tape": this.memory, "idx": this.memoryIdx } 
+                });
 }
 
 Interpreter.prototype.preProcess = function(optimize)
@@ -307,7 +311,7 @@ Interpreter.prototype.step_run = function()
 
     this.runTime += Date.now() - this.startTime;
     if (this.pc >= this.program.length) {
-        this.fin();
+        this.fin(false);
     }
     else {
         setTimeout(this.run.bind(this), 1);
@@ -323,12 +327,15 @@ Interpreter.prototype.run = function()
         switch (err.level) {
             case "TERMINAL": {
                 postMessage({ "command": "error", "message": err.message });
-                this.fin();
+                this.fin(true);
                 break;
             }
             case "PROCEDURAL": {
                 if (err.name === "EOF") {
                     postMessage({ "command": "read" });
+                }
+                else if (err.name === "HaltInterpreter") {
+                    this.fin(true);
                 }
                 break;
             }

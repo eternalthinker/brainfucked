@@ -5,6 +5,10 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="brainfuck interpreter, esoteric language, urban muller" />
+    <meta name="description" content="Brainfucked - a Javascript interpreter for Brainfuck programming language" />
+    <meta name="author" content="Rahul Anand (eternalthinker)" />
+    <meta name="copyright" content="Apache 2.0" />
     <title>Brainfucked - a Javascript interpreter for Brainfuck programming language</title>
     
     <!-- Bootstrap -->
@@ -86,7 +90,7 @@ Hello World program
       </div>
 
       <div class="col-xs-2 col-sm-2 col-lg-2 text-left">
-        <button type="button" id="memory" class="btn btn-info" disabled>Memory</button>
+        <button type="button" id="show-memory" class="btn btn-info" disabled>Memory</button>
       </div>
     </div>
 
@@ -159,6 +163,25 @@ Hello World program
     <div class="row" style="margin-top:40px"></div>
 
     </div> <!-- main container -->
+
+    <!-- Memory Modal -->
+    <div class="modal fade" id="memory" tabindex="-1" role="dialog" aria-labelledby="memory-tape" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title text-center" id="memory-tape">Memory Tape</h4>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <tbody id="tape"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
 </body>  
   

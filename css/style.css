@@ -20,6 +20,10 @@ textarea {
 	overflow: auto;
 }
 
+@-moz-document url-prefix() {
+  fieldset { display: table-cell; }
+}
+
 /* Generated with TWBS Color */
 .navbar-default {
 	background-color: #28282a;

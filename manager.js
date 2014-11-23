@@ -7,6 +7,9 @@ $(document).ready(function() {
     var $output_ui = $('#output');
     var $input_ui = $('#input');
     var $runtime_ui = $('#runtime');
+    var $memory_btn = $('#show-memory');
+    var $memory_modal = $('#memory');
+    var $tape = $('#tape');
     var $state_ui = $('#state');
     var $notify_ui = $('#notification');
     var $run_btn = $('#run');
@@ -19,6 +22,7 @@ $(document).ready(function() {
     $stop_btn.click(stop);
     $pause_btn.click(pause);
     $resume_btn.click(resume);
+    $memory_btn.click(showMemory);
     $('.load-pgm').click(loadProgram);
 
     var State = Object.freeze({
@@ -29,7 +33,7 @@ $(document).ready(function() {
         FINISHED: "FINISHED"
     });
 
-    // Quick lookup for Bootstrap styling class names: STATE => [stateClass, notifyClass]
+    // Quick lookup for Bootstrap styling class names: STATE => [stateClass, glyphiconClass]
     var StateClass = Object.freeze({
         RUNNING: ["alert-success", "play"],
         PAUSED: ["alert-warning", "pause"],
@@ -40,6 +44,7 @@ $(document).ready(function() {
 
     var curState = State.STOPPED;
     var curNotifyClass = "alert-danger";
+    var curMemory = { tape: [], idx: -1 };
 
     init();
     setState(State.STOPPED);
@@ -81,7 +86,13 @@ $(document).ready(function() {
                     runtime_str = (runtime_ms / 1000.0) + " s";
                 } 
                 $runtime_ui.text(runtime_str);
-                setState(State.FINISHED);
+                curMemory = data.memory;
+                if (! data.halted) {
+                    setState(State.FINISHED);
+                }
+                else if (curState == State.RUNNING) {
+                    setState(State.STOPPED);
+                }
                 break;
             }
             default:
@@ -118,6 +129,7 @@ $(document).ready(function() {
     function init()
     {
         $output_ui.val("");
+        $input_ui.val("");
         $runtime_ui.text("");
         $notify_ui.hide();
     }
@@ -134,17 +146,20 @@ $(document).ready(function() {
         bf.postMessage({ "command": "run", "program": program, "input": input, "optimize": optimize });
     }
 
-    function stop() {
+    function stop() 
+    {
         setState(State.STOPPED);
         bf.postMessage({ "command": "halt" });
     }
 
-    function pause() {
+    function pause() 
+    {
         setState(State.PAUSED);
         bf.postMessage({ "command": "halt" });   
     }
 
-    function resume() {
+    function resume() 
+    {
         if (curState === State.READ) {
             var input = parseInput($input_ui.val());
             bf.postMessage({ "command": "input", "input": input });
@@ -156,7 +171,8 @@ $(document).ready(function() {
         setState(State.RUNNING);
     }
 
-    function setState(state) {
+    function setState(state) 
+    {
         $state_ui.removeClass(StateClass[curState][0]);
         $state_ui.addClass(StateClass[state][0]);
         $state_ui.html("<span class='glyphicon glyphicon-" + StateClass[state][1] + "'></span> " + state);
@@ -168,6 +184,7 @@ $(document).ready(function() {
                 $pause_btn.prop('disabled', false);
                 $resume_btn.prop('disabled', true);
                 $optimize_chk.prop('disabled', true);
+                $memory_btn.prop('disabled', true);
                 break;
             }
             case State.READ:
@@ -177,6 +194,7 @@ $(document).ready(function() {
                 $pause_btn.prop('disabled', true);
                 $resume_btn.prop('disabled', false);
                 $optimize_chk.prop('disabled', true);
+                $memory_btn.prop('disabled', false);
                 break;
             }
             case State.FINISHED:
@@ -186,7 +204,10 @@ $(document).ready(function() {
                 $pause_btn.prop('disabled', true);
                 $resume_btn.prop('disabled', true);
                 $optimize_chk.prop('disabled', false);
-                $notify_ui.hide();
+                $memory_btn.prop('disabled', false);
+                if (curNotifyClass !== "alert-danger") {
+                    $notify_ui.hide();
+                }
                 break;
             }
             default:
@@ -194,7 +215,8 @@ $(document).ready(function() {
         }
     }
 
-    function showError(message) {
+    function showError(message) 
+    {
         $notify_ui.removeClass(curNotifyClass);
         curNotifyClass = "alert-danger";
         $notify_ui.addClass(curNotifyClass);
@@ -202,10 +224,11 @@ $(document).ready(function() {
         $notify_ui.show();
     }
 
-    function promptInput() {
+    function promptInput() 
+    {
         $input_ui.val("");
         $input_ui.focus();
-        // log consumed input
+        // TODO: Log consumed input
         $notify_ui.removeClass(curNotifyClass);
         curNotifyClass = "alert-info";
         $notify_ui.addClass(curNotifyClass);
@@ -213,11 +236,27 @@ $(document).ready(function() {
         $notify_ui.show();
     }
 
-    function loadProgram(event) {
+    function loadProgram(event) 
+    {
         stop();
         init();
-        $program_ui.load("examples/" + event.target.id + ".b");
+        $.get("examples/" + event.target.id + ".b", function (data) {
+            $program_ui.val(data);
+        }, "text");
         location.hash = '#';
+    }
+
+    function showMemory()
+    {
+        $tape.html("<tr><th>Index</th><th>Decimal</th><th>ASCII</th></tr>");
+        for (var i = 0; i < curMemory.tape.length && i < 30000; ++i) {
+            $tape.append("<tr class='" + ((i === curMemory.idx)?"success":"dummy") + "'>"
+            + "<td>" + (i+1) + "</td>"
+            + "<td>" + curMemory.tape[i] + "</td>"
+            + "<td>" + String.fromCharCode(curMemory.tape[i]) + "</td>"
+            + "</tr>");
+        }
+        $memory_modal.modal();
     }
 /* ================== End of UI utility functions ================ */
 
