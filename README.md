@@ -14,5 +14,5 @@ The working version can be viewed [here](http://eternalthinker.github.io/brainfu
 - [x] jQuery magic to the UI
 - [x] Better HTML styling - Bootstrap
 - [ ] Goodies - memory rendering, consumed input
-- [ ] Example snippets, links
+- [x] Example snippets, links
 - [x] Input special characters

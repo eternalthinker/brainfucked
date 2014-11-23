@@ -286,7 +286,7 @@ Interpreter.prototype.step_run = function()
             }
             case this.READ: {
                 if (this.inputIdx < this.input.length) {
-                    this.memory[this.memoryIdx] = String.charCodeAt(this.input[this.inputIdx++]);
+                    this.memory[this.memoryIdx] = String.charCodeAt(this.input[this.inputIdx++]) % 256;
                 }
                 else {
                     this.memory[this.memoryIdx] = 0;

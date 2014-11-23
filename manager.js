@@ -19,6 +19,7 @@ $(document).ready(function() {
     $stop_btn.click(stop);
     $pause_btn.click(pause);
     $resume_btn.click(resume);
+    $('.load-pgm').click(loadProgram);
 
     var State = Object.freeze({
         RUNNING: "RUNNING",
@@ -40,9 +41,7 @@ $(document).ready(function() {
     var curState = State.STOPPED;
     var curNotifyClass = "alert-danger";
 
-    $output_ui.val("");
-    $runtime_ui.text("");
-    $notify_ui.hide();
+    init();
     setState(State.STOPPED);
 
 /* ================== BF Worker ================ */
@@ -114,6 +113,13 @@ $(document).ready(function() {
             }
         });
         return input
+    }
+
+    function init()
+    {
+        $output_ui.val("");
+        $runtime_ui.text("");
+        $notify_ui.hide();
     }
 
     function start()
@@ -200,12 +206,18 @@ $(document).ready(function() {
         $input_ui.val("");
         $input_ui.focus();
         // log consumed input
-        // check for valid input (ascii)
         $notify_ui.removeClass(curNotifyClass);
         curNotifyClass = "alert-info";
         $notify_ui.addClass(curNotifyClass);
         $notify_ui.text("Program is awaiting input. Enter your input and resume.");
         $notify_ui.show();
+    }
+
+    function loadProgram(event) {
+        stop();
+        init();
+        $program_ui.load("examples/" + event.target.id + ".b");
+        location.hash = '#';
     }
 /* ================== End of UI utility functions ================ */
 
