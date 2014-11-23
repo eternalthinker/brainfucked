@@ -1,11 +1,6 @@
-
-/*if(typeof(Worker) !== "undefined") {
-    // Yes! Web worker support!
-    // Some code.....
-    alert("ok");
-} else {
-    // Sorry! No Web Worker support..
-} */
+/*
+ * Manager class for running the Interpreter, and managing UI actions
+ */
 
 $(document).ready(function() {
     var $program_ui = $('#program');
@@ -33,7 +28,7 @@ $(document).ready(function() {
         FINISHED: "FINISHED"
     });
 
-    // Quick lookup for Bootstrap styling class names
+    // Quick lookup for Bootstrap styling class names: STATE => [stateClass, notifyClass]
     var StateClass = Object.freeze({
         RUNNING: ["alert-success", "play"],
         PAUSED: ["alert-warning", "pause"],
@@ -52,6 +47,11 @@ $(document).ready(function() {
 
 /* ================== BF Worker ================ */
 
+    if(typeof(Worker) == "undefined") {
+        $notify_ui.addClass(curNotifyClass);
+        $notify_ui.text("No Web Worker support found in browser. Sorry, cannot run the interpreter!");
+        $notify_ui.show();
+    }
     var bf = new Worker("brainfucked.js");
 
     bf.onmessage = function(event){
@@ -94,13 +94,35 @@ $(document).ready(function() {
 
 /* ================== UI utility functions ================ */
 
+    function parseInput(input)
+    {
+        input = input.replace(/\\(\\|n|\d{1,3})/g, function (m0, m1) {
+            switch (m1) {
+                case "\\":      // "\\" becomes '\'    
+                    return m1;
+                    break;
+                case "n":       // "\n" becomes NEWLINE
+                    return '\n';
+                    break;
+                default:        // "\num" becomes ASCII(num)
+                    var n = +m1;
+                    if (n <= 255) {
+                        return String.fromCharCode(n);
+                    }
+                    return m1;
+                    break;
+            }
+        });
+        return input
+    }
+
     function start()
     {
         $output_ui.val("");
         $runtime_ui.text("");
         $notify_ui.hide();
         var program = $program_ui.val();
-        var input = $input_ui.val();
+        var input = parseInput($input_ui.val());
         var optimize = $optimize_chk.prop('checked');
         setState(State.RUNNING);
         bf.postMessage({ "command": "run", "program": program, "input": input, "optimize": optimize });
@@ -118,7 +140,7 @@ $(document).ready(function() {
 
     function resume() {
         if (curState === State.READ) {
-            var input = $input_ui.val();
+            var input = parseInput($input_ui.val());
             bf.postMessage({ "command": "input", "input": input });
             $notify_ui.hide();
         }

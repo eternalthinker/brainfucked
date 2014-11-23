@@ -4,10 +4,9 @@
  * Author: Rahul Anand [ eternalthinker.co ], Nov 2014
  *
  * Independent interpreter module which runs as a Web Worker.
- * Any external JavaScript can communicate through relevant command messages.
+ * Any external JavaScript can use the interpreter through relevant command messages.
+ * (see onmessage function, and postMessage calls)
  * This is a pure 'interpreter' except for optional optimizations.
- *
- * Documentation at: <pending>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
